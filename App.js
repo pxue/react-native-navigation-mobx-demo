@@ -64,6 +64,31 @@ class Index extends Component {
   }
 }
 
+class Login extends Component {
+  componentDidMount() {
+    const { navigation: { dispatch } } = this.props;
+
+    /* ... add your own login logic here ... */
+
+    let opt = {
+      index: 0,
+      actions: [
+        NavigationActions.navigate({
+          routeName: "App",
+          params: { title: "Index" }
+        })
+      ]
+    };
+
+    // redirect to the main application
+    dispatch(NavigationActions.reset(opt));
+  }
+
+  render() {
+    return null;
+  }
+}
+
 const AppNavigator = StackNavigator(
   {
     Index: { screen: Index },
@@ -71,12 +96,19 @@ const AppNavigator = StackNavigator(
   },
   {
     initialRouteName: "Index",
-    navigationOptions: ({ navigation: { state } }) => {
-      console.log("render state", state);
-      return {
-        title: state.params && state.params.title
-      };
-    }
+    navigationOptions: ({ navigation: { state } }) => ({
+      title: state.params && state.params.title
+    })
+  }
+);
+
+const RootNavigator = StackNavigator(
+  {
+    Login: { screen: Login },
+    App: { screen: AppNavigator }
+  },
+  {
+    headerMode: "none"
   }
 );
 
@@ -85,16 +117,16 @@ class NavigationStore {
     index: 0,
     routes: [
       {
-        key: "Index",
-        routeName: "Index",
-        params: { title: "Index" }
+        key: "Login",
+        routeName: "Login",
+        params: { title: "Login" }
       }
     ]
   };
 
   @action dispatch = (action, stackNavState = true) => {
     const previousNavState = stackNavState ? this.navigationState : null;
-    return (this.navigationState = AppNavigator.router.getStateForAction(
+    return (this.navigationState = RootNavigator.router.getStateForAction(
       action,
       previousNavState
     ));
@@ -109,7 +141,7 @@ class NavigationStore {
 
   render() {
     return (
-      <AppNavigator
+      <RootNavigator
         navigation={addNavigationHelpers({
           dispatch: this.store.dispatch,
           state: this.store.navigationState
