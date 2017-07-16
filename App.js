@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Component } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import {
   addNavigationHelpers,
@@ -9,9 +9,7 @@ import {
 import { observable, action } from "mobx";
 import { observer } from "mobx-react";
 
-import stores from "./stores";
-
-class Search extends React.Component {
+class Search extends Component {
   updateHome = params => {
     const { state, dispatch, goBack } = this.props.navigation;
     dispatch(
@@ -44,7 +42,7 @@ class Search extends React.Component {
   }
 }
 
-class Index extends React.Component {
+class Index extends Component {
   render() {
     const { navigate, setParams, state } = this.props.navigation;
     return (
@@ -56,7 +54,11 @@ class Index extends React.Component {
         >
           <Text>Go to Search</Text>
         </TouchableOpacity>
-        <Text>{state.params && `Searched for ${state.params.search}`}</Text>
+        <Text>
+          {state.params &&
+            state.params.search &&
+            `Searched for ${state.params.search}`}
+        </Text>
       </View>
     );
   }
@@ -69,10 +71,11 @@ const AppNavigator = StackNavigator(
   },
   {
     initialRouteName: "Index",
-    navigationOptions: {
-      header: ({ state }) => {
-        return { title: state.params && state.params.title };
-      }
+    navigationOptions: ({ navigation: { state } }) => {
+      console.log("render state", state);
+      return {
+        title: state.params && state.params.title
+      };
     }
   }
 );
@@ -80,10 +83,15 @@ const AppNavigator = StackNavigator(
 class NavigationStore {
   @observable.ref navigationState = {
     index: 0,
-    routes: [{ key: "Index", routeName: "Index" }]
+    routes: [
+      {
+        key: "Index",
+        routeName: "Index",
+        params: { title: "Index" }
+      }
+    ]
   };
 
-  // NOTE: the second param, is to avoid stacking and reset the nav state
   @action dispatch = (action, stackNavState = true) => {
     const previousNavState = stackNavState ? this.navigationState : null;
     return (this.navigationState = AppNavigator.router.getStateForAction(
@@ -93,7 +101,7 @@ class NavigationStore {
   };
 }
 
-@observer class App extends React.Component {
+@observer class App extends Component {
   constructor(props, context) {
     super(props, context);
     this.store = new NavigationStore();
