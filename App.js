@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import {
+  getChildEventSubscriber,
   addNavigationHelpers,
   StackNavigator,
   NavigationActions
@@ -126,10 +127,11 @@ class NavigationStore {
 
   @action dispatch = (action, stackNavState = true) => {
     const previousNavState = stackNavState ? this.navigationState : null;
-    return (this.navigationState = RootNavigator.router.getStateForAction(
+    const newState = (this.navigationState = RootNavigator.router.getStateForAction(
       action,
       previousNavState
     ));
+    return true
   };
 }
 
@@ -144,7 +146,8 @@ class NavigationStore {
       <RootNavigator
         navigation={addNavigationHelpers({
           dispatch: this.store.dispatch,
-          state: this.store.navigationState
+          state: this.store.navigationState,
+          addListener: () => { /* left empty intentionally */ }
         })}
       />
     );
